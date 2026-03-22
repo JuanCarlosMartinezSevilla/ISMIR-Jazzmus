@@ -10,17 +10,32 @@ readme = "README.md"
 authors = [{ name = "Juan Carlos Martínez Sevilla" },
             { name = "Francesco Foscarin"}]
 license = { text = "MIT" }
-requires-python = ">=3"
+requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "torch>=2.0.0",
+    "torchvision",
     "tqdm",
     "fire==0.7.0",
     "lightning==2.5.0",
     "torchinfo==1.8.0",
     "opencv-python==4.11.0.86",
     "wandb==0.19.5",
-    "datasets==3.2.0",
+    "datasets",
     "scikit-learn==1.6.1",
+    "scikit-image",
     "pillow==11.1.0",
+    "transformers",
+    "gin-config",
+    "einops",
+    "loguru",
+    "rich",
+    "matplotlib",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+predict = [
+    "ultralytics",
+    "huggingface_hub",
 ]

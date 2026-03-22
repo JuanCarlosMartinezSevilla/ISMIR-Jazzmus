@@ -2,9 +2,19 @@ data/*
 vocab/*
 test_predictions/*
 random_batch.pdf
+random_batch.png
 
 # weights folder
 weights/*
+yolo_weigths/
+artifacts/
+
+# generated outputs
+output.krn
+*.tgz
+*.parquet
+image_with_bboxes.pdf
+uv.lock
 
 # vscode folder
 .vscode/*

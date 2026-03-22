@@ -47,3 +47,4 @@ class SMTConfig(PretrainedConfig):
         self.enc_stages = enc_stages
         self.hidden_enc_sizes = hidden_enc_sizes
         self.enc_depths = enc_depths
+        super().__init__(**kwargs)

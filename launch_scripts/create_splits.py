@@ -1,10 +1,13 @@
 import argparse
-from pathlib import Path
 import json
-from PIL import Image
 import random
-from tqdm import tqdm
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+
+from PIL import Image
+from tqdm import tqdm
+
 
 def extract_region_image(image, bounding_box):
     fromX, toX, fromY, toY = (
@@ -43,7 +46,7 @@ def get_regions(scores, partition, new_dataset_path, max_workers=8):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for score in scores:
-            with open(score, "r") as f:
+            with open(score) as f:
                 score_content = json.load(f)
 
             image_path = score.with_suffix(".jpg")
@@ -52,11 +55,18 @@ def get_regions(scores, partition, new_dataset_path, max_workers=8):
             for region in regions:
                 futures.append(
                     executor.submit(
-                        process_region, score, region, image_path, partition, new_dataset_path
+                        process_region,
+                        score,
+                        region,
+                        image_path,
+                        partition,
+                        new_dataset_path,
                     )
                 )
 
-        for future in tqdm(as_completed(futures), total=len(futures), desc=f"Processing {partition}"):
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc=f"Processing {partition}"
+        ):
             result = future.result()
             if result:
                 partition_files.append(result)
@@ -66,19 +76,36 @@ def get_regions(scores, partition, new_dataset_path, max_workers=8):
 
     with open(split_path / f"{partition}_0.txt", "w") as f:
         for file in partition_files:
-            f.write(f"{str(file).replace('../', '')} {str(file.with_suffix('.jpg')).replace('../', '')}\n")
+            f.write(
+                f"{str(file).replace('../', '')} {str(file.with_suffix('.jpg')).replace('../', '')}\n"
+            )
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Creates the splits for the dataset and the regions")
-    parser.add_argument("--dataset_path", type=str, help="Path to the folder containing the clean dataset")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Creates the splits for the dataset and the regions"
+    )
+    parser.add_argument(
+        "--dataset_path",
+        type=str,
+        help="Path to the folder containing the clean dataset",
+    )
+    parser.add_argument(
+        "--new_dataset_path",
+        type=str,
+        default="./data/prueba_dataset_regions/",
+    )
     args = parser.parse_args()
 
     dataset_path = Path(args.dataset_path)
     total_scores = list(dataset_path.glob("*.json"))
     print("Number of scores in the dataset: ", len(total_scores))
 
-    filtered_scores = [score for score in total_scores if "version_1." in score.name or "version_" not in score.name]
+    filtered_scores = [
+        score
+        for score in total_scores
+        if "version_1." in score.name or "version_" not in score.name
+    ]
     test_n_samples = int(len(filtered_scores) * 0.2)
     val_n_samples = int(len(filtered_scores) * 0.1)
 
@@ -102,12 +129,20 @@ if __name__ == '__main__':
             filtered_scores.remove(score)
             continue
 
-    train_samples = [score for score in total_scores if score not in test_samples and score not in val_samples]
-    print(f"Number of test, val and train samples: {len(test_samples)}, {len(val_samples)}, {len(train_samples)}")
+    train_samples = [
+        score
+        for score in total_scores
+        if score not in test_samples and score not in val_samples
+    ]
+    print(
+        f"Number of test, val and train samples: {len(test_samples)}, {len(val_samples)}, {len(train_samples)}"
+    )
 
-    assert len(test_samples) + len(val_samples) + len(train_samples) == len(total_scores)
+    assert len(test_samples) + len(val_samples) + len(train_samples) == len(
+        total_scores
+    )
 
-    new_dataset_path = Path("./data/jazzmus_dataset_regions/")
+    new_dataset_path = Path(args.new_dataset_path)
     new_dataset_path.mkdir(exist_ok=True)
 
     # Process each split using multithreading
